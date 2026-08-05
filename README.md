@@ -5,6 +5,14 @@ Every question attempt is recorded as an event, and four analytics APIs derive i
 (learning velocity, fatigue, question difficulty, chapter/subject mastery) from that event
 stream via MongoDB aggregation pipelines.
 
+## Live demo
+
+- **App:** https://quiz-app-omega-sand-64.vercel.app
+- **API:** https://quiz-app-api-two.vercel.app (interactive docs at `/docs`)
+
+Both are deployed on Vercel; the API is backed by a MongoDB Atlas cluster seeded with the same
+generator described below.
+
 ## Application flow
 
 ```
@@ -250,6 +258,16 @@ than inlined — tune them there.
 
 ## Deployment
 
-Not deployed (optional per the assignment). `backend/api/index.py` is a ready-made Vercel ASGI
-entrypoint if serverless deployment is wanted; the frontend is a static Vite build deployable
-to any static host, pointed at the deployed API via `VITE_API_BASE_URL`.
+Both apps are deployed on Vercel (see [Live demo](#live-demo) above):
+
+- **Backend** — deployed from `backend/` using `backend/vercel.json` (`@vercel/python`, routing
+  everything to the `backend/api/index.py` ASGI entrypoint). Environment variables: `MONGO_URI`
+  (MongoDB Atlas connection string), `DB_NAME`, `CORS_ORIGINS` (includes the frontend's deployed
+  URL).
+- **Frontend** — deployed from `frontend/` as a static Vite build. `frontend/vercel.json` rewrites
+  all paths to `/index.html` so React Router's client-side routes (e.g. `/login`, `/quiz/:id`)
+  resolve on a direct load/refresh, not just client-side navigation. Environment variable:
+  `VITE_API_BASE_URL` (the deployed backend's URL, baked in at build time).
+- **Database** — a MongoDB Atlas free-tier (M0) cluster, seeded once via
+  `MONGO_URI=<atlas-uri> DB_NAME=quiz_app python -m scripts.seed` from a local machine (the seed
+  script is a one-off batch job, not something that runs inside the deployed API).
